@@ -1,0 +1,45 @@
+name: "hotel_reservation_system"
+
+services:
+  psql:
+    image: postgres:latest
+    container_name: "hotelReservationSystemDB"
+    env_file:
+      - db.env
+    volumes:
+      - "psqldb:/db_data"
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "admin", "-d", "hotelReservationSystemDB" ]
+      interval: 5s
+      timeout: 1s
+      retries: 3
+      start_period: 5s
+    networks:
+      - main-net
+    profiles:
+      - dev
+      - prod
+
+  application:
+    build: .
+    image: kacperjn/hotel_reservation_system_spring:1.0
+    pull_policy: never
+    container_name: "hotelReservationSystemApp"
+    ports:
+      - "8080:8080"
+    depends_on:
+      psql:
+        condition: service_healthy
+    networks:
+      - main-net
+    env_file:
+      - app.env
+    profiles:
+      - prod
+
+volumes:
+  psqldb:
+networks:
+  main-net:

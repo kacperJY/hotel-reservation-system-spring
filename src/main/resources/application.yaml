@@ -1,0 +1,44 @@
+spring:
+  application:
+    name: hotelReservationSystem
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER} # Ignorowane w przypadku profilu docker-profile=dev - Dane dostarczane automatycznie przez spring-boot-docker-compose
+    password: ${DB_PASSWORD} # Ignorowane w przypadku profilu docker-profile=dev - Dane dostarczane automatycznie przez spring-boot-docker-compose
+    url: ${DB_URL} # Ignorowane w przypadku profilu docker-profile=dev - Dane dostarczane automatycznie przez spring-boot-docker-compose
+    hikari:
+      data-source-properties:
+        reWriteBatchedInserts: true
+        prepareThreshold: 5
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        order_updates: true
+        order_inserts: true
+        jdbc:
+          batch_size: 50
+        generate_statistics: true
+  security:
+    jwt:
+      secret-key: bmVpZ2hib3JoaWRkZW5saW1pdGVkd2VzdGVybmVsc2VmYXM
+  threads:
+    virtual:
+      enabled: true
+  profiles:
+    active: "dev"
+  docker:
+    compose:
+      profiles:
+        active: dev # docker-profile
+server:
+  port: 8080
+
+availability-days:
+  range: 365
+database-fetch-size: 50
+cancel-reservation-after-days: 3
+

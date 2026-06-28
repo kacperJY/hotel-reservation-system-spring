@@ -1,0 +1,6 @@
+.dockerignore
+.gitignore
+target
+mvnw.cmd
+REAME.md
+hotelReservationSystem-0.0.1-SNAPSHOT.jar.original
