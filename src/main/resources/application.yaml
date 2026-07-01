@@ -12,7 +12,7 @@ spring:
         prepareThreshold: 5
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     show-sql: true
     open-in-view: false
     properties:
@@ -34,6 +34,11 @@ spring:
     compose:
       profiles:
         active: dev # docker-profile
+      stop:
+        command: stop
+  flyway:
+    enabled: true
+
 server:
   port: 8080
 
