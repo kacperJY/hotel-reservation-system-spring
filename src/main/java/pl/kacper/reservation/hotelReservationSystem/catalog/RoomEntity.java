@@ -2,6 +2,7 @@ package pl.kacper.reservation.hotelReservationSystem.catalog;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class RoomEntity {
 
     private int roomCapacity;
 
-    private double pricePerNight;
+    private BigDecimal pricePerNight;
 
     @Enumerated(EnumType.STRING)
     private StandardType standardType;
@@ -45,7 +46,7 @@ public class RoomEntity {
     public RoomEntity() {
     }
 
-    public RoomEntity(long roomNumber, int roomCapacity, double pricePerNight, StandardType standardType, FacilityEntity facility) {
+    public RoomEntity(long roomNumber, int roomCapacity, BigDecimal pricePerNight, StandardType standardType, FacilityEntity facility) {
         this.roomNumber = roomNumber;
         this.roomCapacity = roomCapacity;
         this.pricePerNight = pricePerNight;
@@ -87,11 +88,11 @@ public class RoomEntity {
         this.roomCapacity = roomCapacity;
     }
 
-    public double getPricePerNight() {
+    public BigDecimal getPricePerNight() {
         return pricePerNight;
     }
 
-    public void setPricePerNight(double pricerPerNight) {
+    public void setPricePerNight(BigDecimal pricerPerNight) {
         this.pricePerNight = pricerPerNight;
     }
 

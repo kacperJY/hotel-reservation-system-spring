@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kacper.reservation.hotelReservationSystem.catalog.CurrencyEntity;
 import pl.kacper.reservation.hotelReservationSystem.catalog.ReservationEntity;
 import pl.kacper.reservation.hotelReservationSystem.catalog.RoomAvailabilityEntity;
 import pl.kacper.reservation.hotelReservationSystem.catalog.RoomEntity;
@@ -22,9 +23,12 @@ import pl.kacper.reservation.hotelReservationSystem.guest.dtos.RoomResultDto;
 import pl.kacper.reservation.hotelReservationSystem.repositories.ReservationRepository;
 import pl.kacper.reservation.hotelReservationSystem.repositories.RoomAvailabilityRepository;
 import pl.kacper.reservation.hotelReservationSystem.repositories.RoomRepository;
+import pl.kacper.reservation.hotelReservationSystem.services.CurrencyService;
 import pl.kacper.reservation.hotelReservationSystem.user.UserEntity;
 import pl.kacper.reservation.hotelReservationSystem.repositories.UserRepository;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -37,15 +41,17 @@ public class GuestService {
     private final RoomAvailabilityRepository roomAvailabilityRepository;
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
+    private final CurrencyService currencyService;
 
-    public GuestService(RoomRepository roomRepository, RoomAvailabilityRepository roomAvailabilityRepository, ReservationRepository reservationRepository, UserRepository userRepository) {
+    public GuestService(RoomRepository roomRepository, RoomAvailabilityRepository roomAvailabilityRepository, ReservationRepository reservationRepository, UserRepository userRepository, CurrencyService currencyService) {
         this.roomRepository = roomRepository;
         this.roomAvailabilityRepository = roomAvailabilityRepository;
         this.reservationRepository = reservationRepository;
         this.userRepository = userRepository;
+        this.currencyService = currencyService;
     }
 
-    public List<RoomResultDto> findRooms(String city, Integer guestNumber, LocalDate startDate, LocalDate endDate) {
+    public List<RoomResultDto> findRooms(String city, Integer guestNumber, String currency, LocalDate startDate, LocalDate endDate) {
 
         long nights = ChronoUnit.DAYS.between(startDate, endDate);
         if (nights <= 0) {
@@ -59,7 +65,7 @@ public class GuestService {
         List<RoomResultDto> roomResultDtoList = new ArrayList<>();
 
         for (RoomEntity roomEntity : roomsWithFacilityByIds) {
-            double fullPrice = nights * roomEntity.getPricePerNight();
+            BigDecimal fullPrice = calculateFullPrice(nights, roomEntity.getPricePerNight(), currency);
 
             roomResultDtoList.add(new RoomResultDto(
                     roomEntity.getRoomId(),
@@ -70,8 +76,10 @@ public class GuestService {
                     roomEntity.getFacility().getFacilityType(),
                     roomEntity.getFacility().getAddress(),
                     roomEntity.getRoomCapacity(),
-                    roomEntity.getPricePerNight(),
+                    convertToCurrency(roomEntity.getPricePerNight(),currency),
                     fullPrice,
+                    currency,
+                    nights,
                     roomEntity.getStandardType()
             ));
         }
@@ -86,7 +94,7 @@ public class GuestService {
         LocalDate end = requestDto.endDate();
         long nights = ChronoUnit.DAYS.between(start, end);
 
-        RoomEntity roomEntity = roomRepository.findByRoomIdAndFacility_FacilityId(requestDto.roomId(),requestDto.facilityId())
+        RoomEntity roomEntity = roomRepository.findByRoomIdAndFacility_FacilityId(requestDto.roomId(), requestDto.facilityId())
                 .orElseThrow(() -> new RecordNotExistsDbException("Cannot reserve room that not exists in this facility"));
 
         UserEntity userEntity = userRepository.findByEmail(userDetails.getUsername())
@@ -100,7 +108,7 @@ public class GuestService {
             availabilityByDatesAndRoomIdList.forEach(availability -> availability.setFreeSlots(0));
 
 
-        double fullPrice = calculateFullPrice(nights,roomEntity.getPricePerNight());
+        BigDecimal fullPrice = calculateFullPrice(nights, roomEntity.getPricePerNight());
 
         ReservationEntity reservationEntity = new ReservationEntity(
                 start,
@@ -122,8 +130,27 @@ public class GuestService {
         );
     }
 
-    double calculateFullPrice(long nights, double roomPricePerNight){
-        return nights * roomPricePerNight;
+    BigDecimal convertToCurrency(BigDecimal value, String currencyCode) {
+        if (currencyCode.equals("PLN")) return value;
+
+        CurrencyEntity currencyRate = currencyService.getCurrencyRate(currencyCode);
+        BigDecimal averageRate = currencyRate.getAverageRate();
+
+        return value.divide(averageRate, 2, RoundingMode.HALF_UP);
+    }
+
+    BigDecimal calculateFullPrice(long nights, BigDecimal roomPricePerNight) {
+        return BigDecimal.valueOf(nights).multiply(roomPricePerNight);
+    }
+
+    BigDecimal calculateFullPrice(long nights, BigDecimal roomPricePerNight, String currencyCode) {
+        if (!currencyCode.equals("PLN")) {
+            CurrencyEntity currencyRate = currencyService.getCurrencyRate(currencyCode);
+            BigDecimal averageRate = currencyRate.getAverageRate();
+            return (roomPricePerNight.multiply(BigDecimal.valueOf(nights))).divide(averageRate, 2, RoundingMode.HALF_UP);
+        }
+
+        return BigDecimal.valueOf(nights).multiply(roomPricePerNight);
     }
 
 
@@ -181,19 +208,22 @@ public class GuestService {
     }
 
     @Transactional
-    public void cancelReservation(Long reservationId, UserDetails userDetails){
+    public void cancelReservation(Long reservationId, UserDetails userDetails) {
         ReservationEntity reservationEntity = reservationRepository.findFullReservationByReservationId(reservationId)
                 .orElseThrow(() -> new RecordNotExistsDbException("Cannot cancel reservation that not exists"));
 
-        if(!reservationEntity.getReservationOwner().getEmail().equals(userDetails.getUsername())) throw new AccessDeniedException("Cannot get access to someone else reservation");
+        if (!reservationEntity.getReservationOwner().getEmail().equals(userDetails.getUsername()))
+            throw new AccessDeniedException("Cannot get access to someone else reservation");
 
         LocalDate checkIn = reservationEntity.getCheckIn();
         LocalDate checkOut = reservationEntity.getCheckOut();
         Long roomId = reservationEntity.getRoomEntity().getRoomId();
 
         long between = ChronoUnit.DAYS.between(LocalDate.now(), checkIn);
-        if(between < 2) throw new IllegalStateException("Reservations cannot be cancelled less than 2 days before the reservation date");
-        if (reservationEntity.getStatus() != ReservationEntity.Status.PENDING) throw new IllegalStateException("Only PENDING reservations can be cancelled.");
+        if (between < 2)
+            throw new IllegalStateException("Reservations cannot be cancelled less than 2 days before the reservation date");
+        if (reservationEntity.getStatus() != ReservationEntity.Status.PENDING)
+            throw new IllegalStateException("Only PENDING reservations can be cancelled.");
 
         List<RoomAvailabilityEntity> availabilityByDatesAndRoomId = roomAvailabilityRepository.findTakenByDatesAndRoomId(roomId, checkIn, checkOut);
         availabilityByDatesAndRoomId.forEach(takenDates -> takenDates.setFreeSlots(1));

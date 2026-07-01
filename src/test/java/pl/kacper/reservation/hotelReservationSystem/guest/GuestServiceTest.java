@@ -11,10 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
-import pl.kacper.reservation.hotelReservationSystem.catalog.Address;
-import pl.kacper.reservation.hotelReservationSystem.catalog.ReservationEntity;
-import pl.kacper.reservation.hotelReservationSystem.catalog.RoomAvailabilityEntity;
-import pl.kacper.reservation.hotelReservationSystem.catalog.RoomEntity;
+import pl.kacper.reservation.hotelReservationSystem.catalog.*;
+import pl.kacper.reservation.hotelReservationSystem.dtos.CurrencyDto;
 import pl.kacper.reservation.hotelReservationSystem.dtos.PageResultDto;
 import pl.kacper.reservation.hotelReservationSystem.exception.NoElementsException;
 import pl.kacper.reservation.hotelReservationSystem.exception.RecordNotExistsDbException;
@@ -26,8 +24,11 @@ import pl.kacper.reservation.hotelReservationSystem.repositories.ReservationRepo
 import pl.kacper.reservation.hotelReservationSystem.repositories.RoomAvailabilityRepository;
 import pl.kacper.reservation.hotelReservationSystem.repositories.RoomRepository;
 import pl.kacper.reservation.hotelReservationSystem.repositories.UserRepository;
+import pl.kacper.reservation.hotelReservationSystem.services.CurrencyService;
 import pl.kacper.reservation.hotelReservationSystem.user.UserEntity;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
@@ -48,18 +49,38 @@ class GuestServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock
+    private CurrencyService currencyService;
+
     @InjectMocks
     private GuestService guestService;
 
     @Test
-    @DisplayName("Should return 3600 for 9 Night and Price 400 per night")
+    @DisplayName("Should return 3600 PLN for 9 nights and Price 400 PLN per night")
     void should9NightAnd400PerNightReturn3600() {
         long nights = 9;
-        double pricePerNight = 400;
+        BigDecimal pricePerNight = BigDecimal.valueOf(400);
 
-        double result = guestService.calculateFullPrice(nights, pricePerNight);
+        BigDecimal result = guestService.calculateFullPrice(nights, pricePerNight);
 
-        Assertions.assertThat(result).isEqualTo(3600);
+        Assertions.assertThat(result).isEqualTo(new BigDecimal(3600));
+    }
+
+    @Test
+    @DisplayName("Should return 900.00 EUR (1 EUR = 4.5 PLN) for 9 nights and 450 PLN per night")
+    void should9NightAnd450PerNightReturn900EUR(){
+        long nights = 9;
+        BigDecimal pricePerNight = new BigDecimal("450");
+        String currencyCode = "EUR";
+
+        CurrencyEntity currencyEntity = new CurrencyEntity(null,currencyCode,new BigDecimal("4.5"),null);
+
+        Mockito.when(currencyService.getCurrencyRate(currencyCode)).thenReturn(currencyEntity);
+
+        BigDecimal result = guestService.calculateFullPrice(nights, pricePerNight, currencyCode);
+
+        Assertions.assertThat(result).isEqualByComparingTo("900.00");
+
     }
 
     // findRooms
@@ -70,7 +91,7 @@ class GuestServiceTest {
         LocalDate startDate = LocalDate.now().plusDays(5);
         LocalDate endDate = LocalDate.now().minusDays(5);
 
-        List<RoomResultDto> rooms = guestService.findRooms(null, null, startDate, endDate);
+        List<RoomResultDto> rooms = guestService.findRooms(null, null, "PLN", startDate, endDate);
 
         Assertions.assertThat(rooms).isEmpty();
     }
@@ -87,7 +108,7 @@ class GuestServiceTest {
         UserEntity userEntity = new UserEntity("email@", null, null);
         ReservationRequestDto reservationRequestDto = new ReservationRequestDto(roomId, facilityId, start, end);
 
-        RoomEntity mockRoom = new RoomEntity(10, 2, 100, RoomEntity.StandardType.NORMAL, null);
+        RoomEntity mockRoom = new RoomEntity(10, 2, BigDecimal.valueOf(100), RoomEntity.StandardType.NORMAL, null);
         ReflectionTestUtils.setField(mockRoom, "roomId", roomId);
 
         Mockito.when(roomRepository.findByRoomIdAndFacility_FacilityId(roomId, facilityId))
@@ -127,7 +148,7 @@ class GuestServiceTest {
 
         UserEntity userEntity = new UserEntity("email@", null, null);
 
-        RoomEntity mockRoom = new RoomEntity(10, 2, 100, RoomEntity.StandardType.NORMAL, null);
+        RoomEntity mockRoom = new RoomEntity(10, 2, BigDecimal.valueOf(100), RoomEntity.StandardType.NORMAL, null);
         ReflectionTestUtils.setField(mockRoom, "roomId", roomId);
 
         // when
@@ -214,12 +235,12 @@ class GuestServiceTest {
         ReflectionTestUtils.setField(facility, "address",
                 new Address("City", "Street", "1", "00-000"));
 
-        RoomEntity room = new RoomEntity(10, 2, 100, RoomEntity.StandardType.NORMAL, facility);
+        RoomEntity room = new RoomEntity(10, 2, BigDecimal.valueOf(100), RoomEntity.StandardType.NORMAL, facility);
 
         ReservationEntity reservation = new ReservationEntity(
                 LocalDate.now().plusDays(10),
                 LocalDate.now().plusDays(12),
-                500.0,
+                BigDecimal.valueOf(50),
                 ReservationEntity.Status.PENDING,
                 room,
                 userEntity
@@ -262,7 +283,7 @@ class GuestServiceTest {
         ReservationEntity reservation = new ReservationEntity(
                 LocalDate.now().plusDays(5), // Zapas > 2 dni
                 LocalDate.now().plusDays(7),
-                500.0,
+                BigDecimal.valueOf(50),
                 ReservationEntity.Status.PENDING,
                 room,
                 user
@@ -292,7 +313,7 @@ class GuestServiceTest {
         UserEntity currentUser = new UserEntity("hacker@", null, null);
         UserEntity ownerUser = new UserEntity("owner@", null, null);
 
-        ReservationEntity reservation = new ReservationEntity(null, null, 0, null, null, ownerUser);
+        ReservationEntity reservation = new ReservationEntity(null, null, BigDecimal.ZERO, null, null, ownerUser);
 
         Mockito.when(reservationRepository.findFullReservationByReservationId(reservationId))
                 .thenReturn(Optional.of(reservation));
@@ -311,7 +332,7 @@ class GuestServiceTest {
         ReservationEntity reservation = new ReservationEntity(
                 LocalDate.now().plusDays(1), // Tylko 1 dzień zapasu!
                 LocalDate.now().plusDays(3),
-                500.0,
+                BigDecimal.valueOf(50),
                 ReservationEntity.Status.PENDING,
                 new RoomEntity(),
                 user
@@ -334,7 +355,7 @@ class GuestServiceTest {
         ReservationEntity reservation = new ReservationEntity(
                 LocalDate.now().plusDays(5),
                 LocalDate.now().plusDays(7),
-                500.0,
+                BigDecimal.valueOf(50),
                 ReservationEntity.Status.CONFIRMED,
                 new RoomEntity(),
                 user

@@ -25,6 +25,7 @@ import pl.kacper.reservation.hotelReservationSystem.repositories.UserRepository;
 import pl.kacper.reservation.hotelReservationSystem.user.Role;
 import pl.kacper.reservation.hotelReservationSystem.user.UserEntity;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,7 +81,7 @@ class AdminServiceTest {
     void shouldCreateRoomSuccessfully() {
         // given
         long facilityId = 10L;
-        RoomRequestDto roomRequestDto = new RoomRequestDto(101, 2, 250.0, RoomEntity.StandardType.NORMAL);
+        RoomRequestDto roomRequestDto = new RoomRequestDto(101, 2, new BigDecimal("250"), RoomEntity.StandardType.NORMAL);
 
         FacilityEntity facilityEntity = new FacilityEntity();
         ReflectionTestUtils.setField(facilityEntity, "facilityId", facilityId);
@@ -110,7 +111,7 @@ class AdminServiceTest {
     void shouldThrowExceptionWhenFacilityNotExistsForRoom() {
         // given
         long facilityId = 99L;
-        RoomRequestDto roomRequestDto = new RoomRequestDto(101, 2, 250.0, RoomEntity.StandardType.NORMAL);
+        RoomRequestDto roomRequestDto = new RoomRequestDto(101, 2, new BigDecimal("250"), RoomEntity.StandardType.NORMAL);
 
         Mockito.when(facilityRepository.findById(facilityId)).thenReturn(Optional.empty());
 

@@ -1,4 +1,4 @@
-package pl.kacper.reservation.hotelReservationSystem.config;
+package pl.kacper.reservation.hotelReservationSystem.configs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

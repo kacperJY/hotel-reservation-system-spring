@@ -41,4 +41,3 @@ availability-days:
   range: 365
 database-fetch-size: 50
 cancel-reservation-after-days: 3
-

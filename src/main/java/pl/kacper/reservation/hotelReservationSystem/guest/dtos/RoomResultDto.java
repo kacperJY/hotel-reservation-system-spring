@@ -5,6 +5,7 @@ import pl.kacper.reservation.hotelReservationSystem.catalog.Address;
 import pl.kacper.reservation.hotelReservationSystem.catalog.FacilityEntity;
 import pl.kacper.reservation.hotelReservationSystem.catalog.RoomEntity;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public record RoomResultDto(
@@ -16,8 +17,10 @@ public record RoomResultDto(
         FacilityEntity.FacilityType facilityType,
         Address address,
         int roomCapacity,
-        double pricePerNight,
-        double fullPrice,
+        BigDecimal pricePerNight,
+        BigDecimal fullPrice,
+        String currency,
+        long nights,
         RoomEntity.StandardType roomStandardType
 ) {
 }

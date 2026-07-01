@@ -21,6 +21,7 @@ import pl.kacper.reservation.hotelReservationSystem.user.UserEntity;
 import pl.kacper.reservation.hotelReservationSystem.user.UserService;
 import pl.kacper.reservation.hotelReservationSystem.user.dto.UserRequestDto;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Component
@@ -107,9 +108,9 @@ public class DatabaseSeeder implements CommandLineRunner {
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 
         try {
-            adminService.createRoom(hotel1Entity.getFacilityId(), new RoomRequestDto(101, 2, 350.0, RoomEntity.StandardType.NORMAL));
-            adminService.createRoom(hotel2Entity.getFacilityId(), new RoomRequestDto(102, 2, 350.0, RoomEntity.StandardType.NORMAL));
-            adminService.createRoom(apartmentEntity.getFacilityId(), new RoomRequestDto(201, 4, 600.0, RoomEntity.StandardType.PREMIUM));
+            adminService.createRoom(hotel1Entity.getFacilityId(), new RoomRequestDto(101, 2, new BigDecimal("350"), RoomEntity.StandardType.NORMAL));
+            adminService.createRoom(hotel2Entity.getFacilityId(), new RoomRequestDto(102, 2, new BigDecimal("350"), RoomEntity.StandardType.NORMAL));
+            adminService.createRoom(apartmentEntity.getFacilityId(), new RoomRequestDto(201, 4, new BigDecimal("600"), RoomEntity.StandardType.PREMIUM));
         } finally {
             SecurityContextHolder.clearContext();
         }

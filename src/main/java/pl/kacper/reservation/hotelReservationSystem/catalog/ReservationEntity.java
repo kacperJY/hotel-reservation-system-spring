@@ -3,6 +3,7 @@ package pl.kacper.reservation.hotelReservationSystem.catalog;
 import jakarta.persistence.*;
 import pl.kacper.reservation.hotelReservationSystem.user.UserEntity;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -22,7 +23,7 @@ public class ReservationEntity {
 
     private LocalDate createdAt;
 
-    private double fullPrice;
+    private BigDecimal fullPrice;
 
     @Enumerated(EnumType.STRING)
     private Status status;
@@ -40,7 +41,7 @@ public class ReservationEntity {
     public ReservationEntity() {
     }
 
-    public ReservationEntity(LocalDate checkIn, LocalDate checkOut, double fullPrice, Status status, RoomEntity roomEntity, UserEntity userEntity) {
+    public ReservationEntity(LocalDate checkIn, LocalDate checkOut, BigDecimal fullPrice, Status status, RoomEntity roomEntity, UserEntity userEntity) {
         this.checkIn = checkIn;
         this.checkOut = checkOut;
         this.fullPrice = fullPrice;
@@ -81,11 +82,11 @@ public class ReservationEntity {
         this.checkIn = checkIn;
     }
 
-    public double getFullPrice() {
+    public BigDecimal getFullPrice() {
         return fullPrice;
     }
 
-    public void setFullPrice(double fullPrice) {
+    public void setFullPrice(BigDecimal fullPrice) {
         this.fullPrice = fullPrice;
     }
 

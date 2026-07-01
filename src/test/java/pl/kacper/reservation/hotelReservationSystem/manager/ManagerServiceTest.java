@@ -18,6 +18,7 @@ import pl.kacper.reservation.hotelReservationSystem.manager.dtos.ReservationStat
 import pl.kacper.reservation.hotelReservationSystem.repositories.ReservationRepository;
 import pl.kacper.reservation.hotelReservationSystem.repositories.RoomAvailabilityRepository;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -140,7 +141,7 @@ class ManagerServiceTest {
         Long reservationId = 100L;
         ReservationStatusRequestDto requestDto = new ReservationStatusRequestDto(ReservationEntity.Status.CONFIRMED);
 
-        ReservationEntity mockReservation = new ReservationEntity(null, null, 0, ReservationEntity.Status.PENDING, null, null);
+        ReservationEntity mockReservation = new ReservationEntity(null, null, BigDecimal.ZERO, ReservationEntity.Status.PENDING, null, null);
 
         Mockito.when(reservationRepository.findByReservationIdAndRoomEntity_Facility_FacilityId(reservationId, facilityId))
                 .thenReturn(Optional.of(mockReservation));
@@ -172,7 +173,7 @@ class ManagerServiceTest {
         long facilityId = 10L;
 
         Mockito.when(reservationRepository.findByReservationIdAndRoomEntity_Facility_FacilityId(reservationId, facilityId))
-                .thenReturn(Optional.of(new ReservationEntity(null, null, 0, ReservationEntity.Status.CANCELLED, null, null)));
+                .thenReturn(Optional.of(new ReservationEntity(null, null, BigDecimal.ZERO, ReservationEntity.Status.CANCELLED, null, null)));
 
         ReservationStatusRequestDto dummyDto = new ReservationStatusRequestDto(ReservationEntity.Status.CONFIRMED);
 

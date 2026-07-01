@@ -30,11 +30,12 @@ public class GuestController {
     public ResponseEntity<List<RoomResultDto>> findRooms(
             @RequestParam(name = "city", required = false) String city,
             @RequestParam(name = "guestNumber", required = false) Integer guestNumber,
+            @RequestParam(name = "curr", required = false, defaultValue = "PLN") String currency,
             @RequestParam(name = "startDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
             @RequestParam(name = "endDate") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate
             ){
 
-        List<RoomResultDto> rooms = guestService.findRooms(city, guestNumber, startDate, endDate);
+        List<RoomResultDto> rooms = guestService.findRooms(city, guestNumber,currency, startDate, endDate);
         return ResponseEntity.ok(rooms);
     }
 

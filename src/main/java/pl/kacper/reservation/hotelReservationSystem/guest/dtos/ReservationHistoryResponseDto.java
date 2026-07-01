@@ -3,6 +3,7 @@ package pl.kacper.reservation.hotelReservationSystem.guest.dtos;
 import pl.kacper.reservation.hotelReservationSystem.catalog.Address;
 import pl.kacper.reservation.hotelReservationSystem.catalog.ReservationEntity;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 public record ReservationHistoryResponseDto(
@@ -11,7 +12,7 @@ public record ReservationHistoryResponseDto(
         LocalDate checkOutDate,
         long nights,
         ReservationEntity.Status reservationStatus,
-        double fullPrice,
+        BigDecimal fullPrice,
         String hotelName,
         Address address,
         int roomCapacity,
