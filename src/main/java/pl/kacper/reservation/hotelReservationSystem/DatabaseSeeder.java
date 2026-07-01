@@ -1,5 +1,6 @@
 package pl.kacper.reservation.hotelReservationSystem;
 
+import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -36,13 +37,16 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
     private final FacilityRepository facilityRepository;
 
+    private final EntityManager entityManager;
+
     @Autowired
-    public DatabaseSeeder(UserService userService, AdminService adminService, UserRepository userRepository, FacilityRepository facilityRepository, Environment environment) {
+    public DatabaseSeeder(UserService userService, AdminService adminService, UserRepository userRepository, FacilityRepository facilityRepository, Environment environment, EntityManager entityManager) {
         this.userService = userService;
         this.adminService = adminService;
         this.userRepository = userRepository;
         this.facilityRepository = facilityRepository;
         this.environment = environment;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -52,6 +56,12 @@ public class DatabaseSeeder implements CommandLineRunner {
         String[] activeProfiles = this.environment.getActiveProfiles();
         System.out.println(" ACTIVE PROFILE ######################################");
         List.of(activeProfiles).forEach(System.out::println);
+
+        // IF DATABASE IS NOT EMPTY - SKIP
+        Long count = entityManager.createQuery("select count(user.id) from UserEntity user", Long.class)
+                .getSingleResult();
+
+        if(count > 0) return;
 
         UserRequestDto adminDto = new UserRequestDto("admin@hotel.com", "admin1234", "111222333");
         UserRequestDto managerGWHDto = new UserRequestDto("manager@gwh.com", "manager123", "444555666");

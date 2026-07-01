@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
 @Table(name = "currencies")
@@ -28,6 +29,18 @@ public class CurrencyEntity {
         this.currencyCode = currencyCode;
         this.averageRate = averageRate;
         this.publicationDate = publicationDate;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        CurrencyEntity that = (CurrencyEntity) object;
+        return Objects.equals(currencyCode, that.currencyCode);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(currencyCode);
     }
 
     public Long getCurrencyId() {

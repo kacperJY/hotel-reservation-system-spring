@@ -73,13 +73,13 @@ public class CurrencyUpdaterService {
         List<CurrencyEntity> currencyEntityList = new ArrayList<>();
         for (CurrenciesTableDto currenciesTableDto : currenciesTableDtos) {
             for (CurrencyDto currencyDto : currenciesTableDto.currencyDtoList()) {
-                currencyEntityList.add(
-                        new CurrencyEntity(
-                                currencyDto.currencyName(),
-                                currencyDto.currencyCode(),
-                                currencyDto.averageRate(),
-                                currenciesTableDto.publicationData()
-                        )
+                currencyRepository.findByCurrencyCode(currencyDto.currencyCode()).ifPresentOrElse(
+                        existingCurrency -> {
+                            existingCurrency.setAverageRate(currencyDto.averageRate());
+                            existingCurrency.setPublicationDate(currenciesTableDto.publicationData());
+                        },
+                        () -> currencyEntityList.add(new CurrencyEntity(currencyDto.currencyName(), currencyDto.currencyCode(), currencyDto.averageRate(), currenciesTableDto.publicationData()))
+
                 );
             }
         }
