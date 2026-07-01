@@ -33,6 +33,11 @@ Aplikacja implementuje kompletny proces biznesowy: od dynamicznego zarządzania 
 6.  **Ustandaryzowana Obsługa Błędów:**
     Aplikacja posiada globalny komponent `@ControllerAdvice`, który przechwytuje wszelkie wyjątki biznesowe oraz błędy walidacji (np. z pakietu `jakarta.validation`) i tłumaczy je na rygorystyczny standard **RFC 7807 Problem Detail**, zwracając czytelne, ujednolicone obiekty JSON dla klienta API.
 
+7. **Bezpieczna Integracja z Zewnętrznym API (Virtual Threads & Cache-Aside):** 
+   Moduł wielowalutowy komunikuje się z API NBP za pomocą interfejsu RestClient opartego na Wątkach Wirtualnych, eliminując blokowanie wątków systemowych (OS threads) przy operacjach I/O. Aby uniknąć opóźnień sieciowych i blokad typu Rate Limiting, wdrożono wzorzec Cache-Aside. Kursy synchronizują się asynchronicznie w tle (CRON @Scheduled), a zapytania użytkowników obsługiwane są bezpośrednio z szybkiej pamięci RAM (@Cacheable).
+
+
+
 ## 📦 Struktura Projektu (Główne Pakiety)
 
 ```text
