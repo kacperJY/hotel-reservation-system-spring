@@ -1,6 +1,8 @@
 package pl.kacper.reservation.hotelReservationSystem.schduledServices;
 
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatusCode;
@@ -33,6 +35,8 @@ public class CurrencyUpdaterService {
     private final CurrencyRepository currencyRepository;
     private final CacheManager cacheManager;
 
+    private final Logger logger = LoggerFactory.getLogger(CurrencyUpdaterService.class);
+
     private RestClient restClient;
 
     private static final String API_BASE_URL = "https://api.nbp.pl/api/exchangerates/tables/A/";
@@ -59,10 +63,11 @@ public class CurrencyUpdaterService {
                 .accept(MediaType.APPLICATION_JSON)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (request, response) -> {
-                    throw new ClientApiRequestException("Invalid api request to: %s %n Error info: %s - %s".formatted(API_BASE_URL, response.getStatusCode(), response.getStatusText()));
+                    logger.error("Invalid api request to: {} \n Error info: {} - {}", API_BASE_URL, response.getStatusCode(), response.getStatusText());
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, ((request, response) -> {
-                    throw new ApiResponseException("Api error from: %s %n Error info: %s - %s".formatted(API_BASE_URL, response.getStatusCode(), response.getStatusText()));
+                    logger.error("Api error from: {} %n Error info: {} - {}", API_BASE_URL, response.getStatusCode(), response.getStatusText());
+                    throw new ApiResponseException("Cannot fetch current currencies - NBP Service unavailable");
                 }))
                 .body(CurrenciesTableDto[].class);
 
