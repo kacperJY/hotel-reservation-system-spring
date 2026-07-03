@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import pl.kacper.reservation.hotelReservationSystem.catalog.CurrencyEntity;
+import pl.kacper.reservation.hotelReservationSystem.exception.ApiResponseException;
 import pl.kacper.reservation.hotelReservationSystem.exception.RecordNotExistsDbException;
 import pl.kacper.reservation.hotelReservationSystem.repositories.CurrencyRepository;
 import pl.kacper.reservation.hotelReservationSystem.schduledServices.CurrencyUpdaterService;
@@ -31,11 +32,7 @@ public class CurrencyService {
     @EventListener(ApplicationReadyEvent.class)
     @Transactional // new transaction for modifying operation
     public void init() {
-        try {
-            currencyUpdaterService.fetchCurrencies();
-        } catch (Exception e) {
-            logger.info("Couldn't fetch new currency rates to update current state: {}", e.getMessage());
-        }
+        currencyUpdaterService.fetchCurrencies();
     }
 
     @Cacheable(value = "currencyRates", key = "#currencyCode", sync = true)

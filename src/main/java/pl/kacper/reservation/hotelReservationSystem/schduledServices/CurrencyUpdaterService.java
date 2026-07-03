@@ -3,6 +3,7 @@ package pl.kacper.reservation.hotelReservationSystem.schduledServices;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatusCode;
@@ -39,7 +40,8 @@ public class CurrencyUpdaterService {
 
     private RestClient restClient;
 
-    private static final String API_BASE_URL = "https://api.nbp.pl/api/exchangerates/tables/A/";
+    @Value("${nbp-api-url}")
+    private String API_BASE_URL;
 
     public CurrencyUpdaterService(HttpClient httpClient, CurrencyRepository currencyRepository, CacheManager cacheManager) {
         this.httpClient = httpClient;
@@ -66,13 +68,17 @@ public class CurrencyUpdaterService {
                     logger.error("Invalid api request to: {} \n Error info: {} - {}", API_BASE_URL, response.getStatusCode(), response.getStatusText());
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, ((request, response) -> {
-                    logger.error("Api error from: {} %n Error info: {} - {}", API_BASE_URL, response.getStatusCode(), response.getStatusText());
-                    throw new ApiResponseException("Cannot fetch current currencies - NBP Service unavailable");
+                    logger.error("API not available: {} %n Error info: {} - {}", API_BASE_URL, response.getStatusCode(), response.getStatusText());
+                    logger.info("Service will use last fetched data from NBP");
                 }))
+                .onStatus(HttpStatusCode::is2xxSuccessful, ((request, response) -> System.out.println(response.getBody())))
+                .onStatus(HttpStatusCode::is1xxInformational, ((request, response) -> System.out.println(response.getBody())))
                 .body(CurrenciesTableDto[].class);
 
-        if (currenciesTableDtos == null) {
-            throw new FetchNoResultException("There is no result from API: " + API_BASE_URL);
+
+        if(currenciesTableDtos == null) {
+            currencyRepository.findFirstByCurrencyCode("EUR").orElseThrow(() -> new ApiResponseException("FATAL: Cannot initialize currencies"));
+            return;
         }
 
         List<CurrencyEntity> currencyEntityList = new ArrayList<>();

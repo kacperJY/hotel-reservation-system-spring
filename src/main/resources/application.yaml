@@ -29,7 +29,7 @@ spring:
     virtual:
       enabled: true
   profiles:
-    active: "dev"
+    active: "test"
   docker:
     compose:
       profiles:
@@ -46,3 +46,5 @@ availability-days:
   range: 365
 database-fetch-size: 50
 cancel-reservation-after-days: 3
+
+nbp-api-url: https://api.nbp.pl/api/exchangerates/tables/A/
