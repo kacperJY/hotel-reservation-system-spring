@@ -72,7 +72,7 @@ public class BaseIntegrationTest {
 
     @AfterEach
     public void cleanDatabase() {
-        JdbcTestUtils.deleteFromTables(jdbcTemplate, "currencies", "reservations", "room_availability", "rooms", "facilities");
+        JdbcTestUtils.deleteFromTables(jdbcTemplate, "currencies", "reservations", "room_availability", "rooms", "facilities","users");
     }
 
     @DynamicPropertySource

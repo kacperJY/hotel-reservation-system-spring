@@ -7,7 +7,6 @@ import org.springframework.cache.annotation.EnableCaching;
 @SpringBootApplication
 @EnableCaching
 public class HotelReservationSystemApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(HotelReservationSystemApplication.class, args);
 	}
