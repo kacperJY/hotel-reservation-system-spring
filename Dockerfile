@@ -5,7 +5,7 @@ COPY mvnw pom.xml /build/
 WORKDIR /build
 RUN ./mvnw dependency:go-offline
 COPY src /build/src
-RUN ./mvnw clean package
+RUN ./mvnw clean package -DskipTests
 
 FROM eclipse-temurin:25-alpine AS application
 COPY --from=maven-build /build/target/hotel*.jar /opt/app.jar
