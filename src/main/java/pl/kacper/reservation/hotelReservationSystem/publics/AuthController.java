@@ -4,10 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.kacper.reservation.hotelReservationSystem.user.UserService;
 import pl.kacper.reservation.hotelReservationSystem.user.dto.UserLoginResponseDto;
 import pl.kacper.reservation.hotelReservationSystem.user.dto.UserRequestDto;
@@ -23,7 +20,7 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @PostMapping("/login")
+    @GetMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserRequestDto userRequestDto, HttpServletResponse httpServletResponse){
         UserLoginResponseDto responseDto = userService.login(userRequestDto);
         String token = responseDto.token();

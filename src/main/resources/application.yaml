@@ -24,7 +24,7 @@ spring:
         generate_statistics: true
   security:
     jwt:
-      secret-key: bmVpZ2hib3JoaWRkZW5saW1pdGVkd2VzdGVybmVsc2VmYXM
+      secret-key: ${SPRING_SECURITY_JWT_SECRET-KEY}
   threads:
     virtual:
       enabled: true

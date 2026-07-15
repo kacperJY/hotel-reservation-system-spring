@@ -1,5 +1,6 @@
 package pl.kacper.reservation.hotelReservationSystem.guest;
 
+import jakarta.validation.Valid;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,14 +41,14 @@ public class GuestController {
     }
 
     @PostMapping("/rooms/reservations")
-    public ResponseEntity<ReservationResponseDto> createReservation(@RequestBody ReservationRequestDto requestDto, @AuthenticationPrincipal UserDetails userDetails){
+    public ResponseEntity<ReservationResponseDto> createReservation(@RequestBody @Valid ReservationRequestDto requestDto, @AuthenticationPrincipal UserDetails userDetails){
 
         ReservationResponseDto reservation = guestService.createReservation(requestDto, userDetails);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(reservation);
     }
 
-    @PatchMapping("/rooms/reservations")
+    @GetMapping("/rooms/reservations")
     public ResponseEntity<PageResultDto<ReservationHistoryResponseDto>> getUserReservations(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestParam(name = "page", defaultValue = "1") int pageNumber){
@@ -56,7 +57,7 @@ public class GuestController {
         return ResponseEntity.ok(userReservationHistory);
     }
 
-    @GetMapping("/rooms/reservations/{reservationId}/cancel")
+    @PatchMapping("/rooms/reservations/{reservationId}/cancel")
     public ResponseEntity<Void> cancelReservation(@PathVariable(name = "reservationId") Long reservationId, @AuthenticationPrincipal UserDetails userDetails){
 
         guestService.cancelReservation(reservationId,userDetails);
