@@ -1,8 +1,8 @@
 # Hotel Reservation System
 
-Backend aplikacji do zarządzania rezerwacjami hotelowymi napisany w **Java 25** i **Spring Boot 3**.
+A backend application for managing hotel reservations, built with **Java 25** and **Spring Boot 3**.
 
-Projekt powstał jako ćwiczenie budowy większej aplikacji biznesowej z wykorzystaniem Spring Boot, Spring Security, JPA oraz PostgreSQL. Obejmuje pełny proces obsługi rezerwacji – od zarządzania hotelami i pokojami, przez składanie rezerwacji przez gości, po panel administracyjny oraz automatyczne zadania wykonywane w tle.
+This project was created as a hands-on exercise in building a larger business application with Spring Boot, Spring Security, JPA, and PostgreSQL. It covers the main reservation workflow: managing hotels and rooms, allowing guests to make reservations, handling administrative operations, and running automated background tasks.
 
 ---
 
@@ -23,21 +23,21 @@ Projekt powstał jako ćwiczenie budowy większej aplikacji biznesowej z wykorzy
 
 # ✨ Features
 
-- JWT Authentication & Authorization
-- Role-based access (Guest / Manager / Admin)
+- JWT authentication and authorization
+- Role-based access control (Guest / Manager / Admin)
 - Hotel and room management
 - Reservation management
 - Automatic room availability generation
 - Scheduled background jobs
-- Currency exchange integration (NBP API)
-- Global exception handling (RFC 7807 Problem Details)
+- Currency exchange rate integration with the NBP API
+- Global exception handling using RFC 7807 Problem Details
 - Database migrations with Flyway
 
 ---
 
 # 🏗️ Architecture
 
-Projekt został podzielony na niezależne moduły odpowiadające za konkretne obszary biznesowe.
+The application is divided into modules responsible for separate business areas.
 
 ```text
 catalog
@@ -51,23 +51,23 @@ scheduledServices
 exception
 ```
 
-Najważniejsze decyzje projektowe:
+The main design decisions include:
 
-- wykorzystanie DTO do komunikacji z API,
-- podział logiki biznesowej na serwisy,
-- globalna obsługa wyjątków (`@ControllerAdvice`),
-- autoryzacja oparta o Spring Security oraz JWT,
-- migracje bazy danych przy pomocy Flyway.
+- using DTOs for API communication,
+- separating business logic into services,
+- handling exceptions globally with `@ControllerAdvice`,
+- implementing authentication and authorization with Spring Security and JWT,
+- managing database migrations with Flyway.
 
 ---
 
-# ⚙️ Interesting Implementation Details
+# ⚙️ Implementation Details
 
 ## Event-driven room availability
 
-Po utworzeniu nowego pokoju publikowane jest zdarzenie aplikacyjne.
+When a new room is created, the application publishes an event.
 
-```
+```text
 Room Created
       │
       ▼
@@ -77,58 +77,58 @@ Application Event
 Event Listener
       │
       ▼
-Generate availability for next 365 days
+Generate availability for the next 365 days
 ```
 
-Dzięki temu moduł zarządzania pokojami pozostaje odseparowany od logiki odpowiedzialnej za generowanie dostępności.
+This keeps the room management module separate from the logic responsible for generating room availability.
 
 ---
 
 ## Row-level authorization
 
-Manager może wykonywać operacje wyłącznie na hotelach, do których został przypisany.
+A manager can perform operations only on hotels assigned to them.
 
-Autoryzacja realizowana jest przy pomocy:
+Authorization is implemented using:
 
-- Spring Security
-- `@PreAuthorize`
-- SpEL
-- dodatkowej weryfikacji na poziomie zapytań do bazy.
+- Spring Security,
+- `@PreAuthorize`,
+- SpEL,
+- additional verification at the database query level.
 
 ---
 
 ## Scheduled cleanup
 
-System automatycznie usuwa nieopłacone rezerwacje.
+The system automatically removes unpaid reservations.
 
-Zadanie wykonywane jest przez `@Scheduled`, a rekordy przetwarzane są partiami, aby ograniczyć rozmiar Persistence Context.
+The cleanup task runs with `@Scheduled`. Records are processed in batches to limit the size of the Persistence Context.
 
-Po każdej partii wykonywane jest:
+After each batch, the application calls:
 
-- `flush()`
-- `clear()`
+- `flush()`,
+- `clear()`.
 
-co pozwala utrzymać stabilne zużycie pamięci.
+This helps keep memory usage stable while processing larger sets of records.
 
 ---
 
 ## JPA performance
 
-Projekt wykorzystuje:
+The project uses:
 
-- `@EntityGraph`
-- odpowiednio dobrane strategie pobierania danych
-- dedykowane zapytania JPQL
+- `@EntityGraph`,
+- appropriately selected data-fetching strategies,
+- dedicated JPQL queries.
 
-aby ograniczyć problem N+1 i zmniejszyć liczbę zapytań do bazy.
+These mechanisms help reduce the N+1 query problem and limit the number of database queries.
 
 ---
 
 ## Currency exchange cache
 
-Kursy walut pobierane są z API NBP.
+Currency exchange rates are retrieved from the NBP API.
 
-Synchronizacja odbywa się cyklicznie w tle (`@Scheduled`), natomiast aplikacja korzysta z lokalnego cache (`@Cacheable`), dzięki czemu większość zapytań nie wymaga komunikacji z zewnętrznym API.
+The data is synchronized periodically in the background using `@Scheduled`. The application also uses a local cache with `@Cacheable`, so most requests do not require a call to the external API.
 
 ---
 
@@ -149,7 +149,7 @@ config
 
 ---
 
-# 🚀 Running the project
+# 🚀 Running the Project
 
 ## Requirements
 
@@ -161,34 +161,34 @@ config
 
 ## Development
 
-1. Utwórz plik `db.env` na podstawie `db.env.example`.
-2. Uzupełnij zmienne środowiskowe połączenia z bazą danych.
-3. Uruchom aplikację z profilem `dev`.
+1. Create a `db.env` file based on `db.env.example`.
+2. Set the environment variables required for the database connection.
+3. Start the application with the `dev` profile.
 
-Spring Boot automatycznie uruchomi kontener PostgreSQL za pomocą Docker Compose.
+Spring Boot will automatically start a PostgreSQL container using Docker Compose.
 
-Profil `dev` dodatkowo uruchamia `DatabaseSeeder`, który zasila bazę przykładowymi danymi.
+The `dev` profile also runs `DatabaseSeeder`, which populates the database with sample data.
 
 ## Production
 
-Skonfiguruj pliki:
+Configure the following files:
 
 - `app.env`
 - `db.env`
 
-Następnie uruchom:
+Then run:
 
 ```bash
 docker compose --profile prod up -d --build
 ```
 
-Profil `prod` nie uruchamia seedera i korzysta z konfiguracji przygotowanej dla środowiska produkcyjnego.
+The `prod` profile does not run the database seeder and uses configuration intended for the production environment.
 
 ---
 
 # 📌 Future Improvements
 
 - OpenAPI / Swagger
-- monitoring (Micrometer + Prometheus)
-- obsługa płatności online
-- powiadomienia e-mail
+- Monitoring with Micrometer and Prometheus
+- Online payment support
+- Email notifications
