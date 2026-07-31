@@ -22,14 +22,11 @@ spring:
         jdbc:
           batch_size: 50
         generate_statistics: true
-  security:
-    jwt:
-      secret-key: ${SPRING_SECURITY_JWT_SECRET-KEY}
   threads:
     virtual:
       enabled: true
   profiles:
-    active: "test"
+    active: "dev"
   docker:
     compose:
       profiles:

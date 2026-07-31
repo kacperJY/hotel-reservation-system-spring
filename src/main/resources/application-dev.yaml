@@ -2,3 +2,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  security:
+    jwt:
+      secret-key: DbgptsJbb0NbUkhskgG5bN7WGJtmpLGj4uVC3TjexxCoyTJ9rawO749eipw27qvY

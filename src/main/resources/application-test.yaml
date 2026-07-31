@@ -1,0 +1,4 @@
+spring:
+  security:
+    jwt:
+      secret-key: r6XuwAAEAQ5ovDDRgawY1AuzcfutMElRSsuskzSnajI1ft8E3WFNK42cHBQQvJnQ

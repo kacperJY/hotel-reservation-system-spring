@@ -44,7 +44,7 @@ INSERT INTO public.room_availability (
 SELECT
     nextval('room_availability_seq') + i,
     1,
-    '2026-07-01'::date + i,
+    CURRENT_DATE + i,
     1,
     0
-FROM generate_series(0,30) AS i;
+FROM generate_series(0, 364) AS i;
