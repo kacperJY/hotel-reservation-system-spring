@@ -20,7 +20,7 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<UserLoginResponseDto> login(@RequestBody UserRequestDto userRequestDto, HttpServletResponse httpServletResponse){
         UserLoginResponseDto responseDto = userService.login(userRequestDto);
         String token = responseDto.token();
