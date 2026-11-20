@@ -9,7 +9,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
@@ -57,9 +56,8 @@ public class CurrencyUpdaterService {
                 .build();
     }
 
-    @Scheduled(cron = "0 0 03 * * *", zone = "Europe/Poland")
+    @Scheduled(cron = "${scheduling.daily-maintenance.cron}", zone = "${scheduling.daily-maintenance.zone}")
     @Transactional
-    @Async
     public void fetchCurrencies() {
         CurrenciesTableDto[] currenciesTableDtos = restClient.get()
                 .accept(MediaType.APPLICATION_JSON)

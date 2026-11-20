@@ -35,7 +35,7 @@ public class PendingReservationAfterTimeUpdaterService {
         this.entityManager = entityManager;
     }
 
-    @Scheduled(cron = "0 0 03 * * *", zone = "Europe/Poland")
+    @Scheduled(cron = "${scheduling.daily-maintenance.cron}", zone = "${scheduling.daily-maintenance.zone}")
     @Transactional
     public void updateOldPendingReservations() {
 

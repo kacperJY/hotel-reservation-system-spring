@@ -44,4 +44,9 @@ availability-days:
 database-fetch-size: 50
 cancel-reservation-after-days: 3
 
+scheduling:
+  daily-maintenance:
+    cron: "0 0 3 * * *"
+    zone: Europe/Warsaw
+
 nbp-api-url: https://api.nbp.pl/api/exchangerates/tables/A/
