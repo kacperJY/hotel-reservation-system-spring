@@ -1,4 +1,4 @@
-# 🏨 Hotel Res hotels, rooms, availability and reservations.
+# 🏨 Hotel Reservation System -- rooms, availability and reservations.
 
 > The project supports development, automated test and containerized production profiles.
 
