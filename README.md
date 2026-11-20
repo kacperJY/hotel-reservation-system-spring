@@ -174,7 +174,7 @@ Room availability records use optimistic locking to detect concurrent modificati
 
 Creating a room publishes a Spring application event.
 
-A dedicated listener handles the event and generates room availability records for the configured reservation window. This separates room creation from availability generation without introducing external messaging infrastructure.
+A dedicated listener handles the event and generates room availability records for the configured reservation window. The listener runs asynchronously, only after the room creation transaction has committed, and uses its own transaction. Room creation therefore does not wait for the availability records, and the listener never sees an uncommitted room. This separates room creation from availability generation without introducing external messaging infrastructure.
 
 ## Optimistic locking
 

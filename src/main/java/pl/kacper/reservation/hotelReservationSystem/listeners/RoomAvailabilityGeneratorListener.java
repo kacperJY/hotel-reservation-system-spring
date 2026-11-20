@@ -2,9 +2,12 @@ package pl.kacper.reservation.hotelReservationSystem.listeners;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 import pl.kacper.reservation.hotelReservationSystem.catalog.RoomAvailabilityEntity;
 import pl.kacper.reservation.hotelReservationSystem.catalog.RoomEntity;
 import pl.kacper.reservation.hotelReservationSystem.listeners.events.RoomEventDto;
@@ -30,8 +33,11 @@ public class RoomAvailabilityGeneratorListener {
         this.roomAvailabilityRepository = roomAvailabilityRepository;
     }
 
-    @EventListener
+    // Runs only after the room creation transaction has committed, so the new room is visible
+    // to this separate thread. REQUIRES_NEW is required for a transactional event listener.
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     @Async
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void generateAvailabilityRecords(RoomEventDto roomEventDto) {
         RoomEntity referenceRoom = roomRepository.getReferenceById(roomEventDto.roomId());
 
