@@ -71,7 +71,7 @@ public class SecurityConfig {
                     auth.requestMatchers("/api/guests/rooms/reservations/**").authenticated(); // AnyRole
 
                     auth.requestMatchers("/api/admin/**").hasRole("ADMIN");
-                    auth.requestMatchers("/api/manager/**").hasAnyRole("ADMIN","MANAGER");
+                    auth.requestMatchers("/api/managers/**").hasAnyRole("ADMIN","MANAGER");
 
                     auth.anyRequest().authenticated();
                 })

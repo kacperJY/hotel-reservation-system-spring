@@ -72,7 +72,8 @@ Administrators can:
 
 * create facilities,
 * add rooms,
-* assign managers to facilities.
+* assign managers to facilities,
+* view and update reservations in any facility.
 
 ### Background processing
 

@@ -31,7 +31,7 @@ public class ManagerService {
         this.roomAvailabilityRepository = roomAvailabilityRepository;
     }
 
-    @PreAuthorize("@managerSecurity.checkFacilityAccess(authentication.principal,#facilityId)")
+    @PreAuthorize("hasRole('ADMIN') or @managerSecurity.checkFacilityAccess(authentication.principal, #facilityId)")
     @Transactional(readOnly = true)
     public PageResultDto<ReservationResponseDto> getAllReservationsByFacility(Long facilityId, int originalPageNumber){
         int pageNumber = originalPageNumber - 1;
@@ -67,7 +67,7 @@ public class ManagerService {
         return new PageResultDto<>(originalPageNumber,maxPages,totalElements,elementsOnPage,reservationResponseDtoList);
     }
 
-    @PreAuthorize("@managerSecurity.checkFacilityAccess(authentication.principal,#facilityId)")
+    @PreAuthorize("hasRole('ADMIN') or @managerSecurity.checkFacilityAccess(authentication.principal, #facilityId)")
     @Transactional
     public void updateReservationStatus(Long facilityId, Long reservationId, ReservationStatusRequestDto reservationStatusRequestDto){
         ReservationEntity reservationEntity = reservationRepository.findByReservationIdAndRoomEntity_Facility_FacilityId(reservationId, facilityId)
