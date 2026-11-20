@@ -120,7 +120,7 @@ class GuestServiceTest {
         Mockito.when(roomAvailabilityRepository.findAvailabilityByDatesAndRoomId(roomId, start, end))
                 .thenReturn(List.of(
                         new RoomAvailabilityEntity(null, null, 1),
-                        new RoomAvailabilityEntity(null, null, 1) // (skróciłem dla czytelności)
+                        new RoomAvailabilityEntity(null, null, 1)
                 ));
 
         ArgumentCaptor<ReservationEntity> argumentCaptor = ArgumentCaptor.forClass(ReservationEntity.class);
@@ -133,6 +133,22 @@ class GuestServiceTest {
         Assertions.assertThat(reservationEntity.getCheckIn()).isEqualTo(start);
         Assertions.assertThat(reservationEntity.getCheckOut()).isEqualTo(end);
         Assertions.assertThat(reservationEntity.getRoomEntity().getRoomId()).isEqualTo(roomId);
+    }
+
+    @Test
+    @DisplayName("Should throw IllegalArgumentException when reservation lasts 0 nights")
+    void shouldThrowExceptionWhenReservationHasZeroNights() {
+        // given
+        LocalDate date = LocalDate.now().plusDays(5);
+        ReservationRequestDto reservationRequestDto = new ReservationRequestDto(1L, 10L, date, date);
+        UserEntity userEntity = new UserEntity("email@", null, null);
+
+        // when / then
+        Assertions.assertThatThrownBy(() -> guestService.createReservation(reservationRequestDto, userEntity))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("at least one night");
+
+        Mockito.verifyNoInteractions(roomRepository, roomAvailabilityRepository, reservationRepository);
     }
 
     @Test
@@ -281,7 +297,7 @@ class GuestServiceTest {
         ReflectionTestUtils.setField(room, "roomId", 10L);
 
         ReservationEntity reservation = new ReservationEntity(
-                LocalDate.now().plusDays(5), // Zapas > 2 dni
+                LocalDate.now().plusDays(5), // more than 2 days before check-in
                 LocalDate.now().plusDays(7),
                 BigDecimal.valueOf(50),
                 ReservationEntity.Status.PENDING,
@@ -303,7 +319,7 @@ class GuestServiceTest {
 
         // then
         Assertions.assertThat(reservation.getStatus()).isEqualTo(ReservationEntity.Status.CANCELLED);
-        Assertions.assertThat(takenDate.getFreeSlots()).isEqualTo(1); // Upewniamy się, że z powrotem jest 1
+        Assertions.assertThat(takenDate.getFreeSlots()).isEqualTo(1);
     }
 
     @Test
@@ -330,7 +346,7 @@ class GuestServiceTest {
         UserEntity user = new UserEntity("email@", null, null);
 
         ReservationEntity reservation = new ReservationEntity(
-                LocalDate.now().plusDays(1), // Tylko 1 dzień zapasu!
+                LocalDate.now().plusDays(1), // only 1 day before check-in
                 LocalDate.now().plusDays(3),
                 BigDecimal.valueOf(50),
                 ReservationEntity.Status.PENDING,

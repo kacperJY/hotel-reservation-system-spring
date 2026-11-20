@@ -32,4 +32,31 @@ public class GuestControllerIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.reservationId").exists());
     }
+
+    @Test
+    @WithMockUser(username = "jan.kowalski@example.com", password = "password123", roles = "GUEST")
+    void shouldRejectReservationWhenEndDateIsNotAfterStartDate() throws Exception {
+        LocalDate date = LocalDate.now().plusDays(5);
+        ReservationRequestDto reservationRequestDto = new ReservationRequestDto(1L, 1L, date, date);
+
+        mockMvc.perform(post("/api/guests/rooms/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reservationRequestDto))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.dateRangeValid").value("endDate must be after startDate"));
+    }
+
+    @Test
+    @WithMockUser(username = "jan.kowalski@example.com", password = "password123", roles = "GUEST")
+    void shouldRejectReservationWhenStartDateIsInThePast() throws Exception {
+        ReservationRequestDto reservationRequestDto = new ReservationRequestDto(1L, 1L, LocalDate.now().minusDays(1), LocalDate.now().plusDays(3));
+
+        mockMvc.perform(post("/api/guests/rooms/reservations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(reservationRequestDto))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.startDate").exists());
+    }
 }

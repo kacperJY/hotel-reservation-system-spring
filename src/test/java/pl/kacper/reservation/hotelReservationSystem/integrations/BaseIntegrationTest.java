@@ -44,7 +44,6 @@ public class BaseIntegrationTest {
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "application/json")
-                        // Minimalny, poprawny JSON wymagany przez Twój parser w serwisie
                         .withBody("""
                                 [
                                   {
