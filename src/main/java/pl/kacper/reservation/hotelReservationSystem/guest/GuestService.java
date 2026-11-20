@@ -93,6 +93,8 @@ public class GuestService {
         LocalDate start = requestDto.startDate();
         LocalDate end = requestDto.endDate();
         long nights = ChronoUnit.DAYS.between(start, end);
+        if (nights <= 0)
+            throw new IllegalArgumentException("Reservation must last at least one night");
 
         RoomEntity roomEntity = roomRepository.findByRoomIdAndFacility_FacilityId(requestDto.roomId(), requestDto.facilityId())
                 .orElseThrow(() -> new RecordNotExistsDbException("Cannot reserve room that not exists in this facility"));
