@@ -2,12 +2,12 @@ name: "hotel_reservation_system"
 
 services:
   psql:
-    image: postgres:latest
+    image: postgres:17.10
     container_name: "hotelReservationSystemDB"
     env_file:
       - db.env
     volumes:
-      - "psqldb:/db_data"
+      - "psqldb:/var/lib/postgresql/data"
     ports:
       - "5432:5432"
     healthcheck:
